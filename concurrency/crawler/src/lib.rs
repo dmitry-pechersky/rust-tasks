@@ -3,9 +3,16 @@ use std::sync::{ Arc, Mutex };
 use std::collections::{ HashSet };
 use linkify;
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Config {
-    pub concurrent_requests: Option<usize>,
+    pub concurrent_requests: usize,
+    pub page_channel_buffer: usize,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self { concurrent_requests: 10, page_channel_buffer: 100 }
+    }
 }
 
 pub struct Page {
@@ -22,10 +29,10 @@ impl Crawler {
         Crawler { config }
     }
 
-    pub fn run(&mut self, site: String) -> Receiver<Page> {
-        let (sender, receiver) = channel::<Page>(10);
+    pub async fn run(self, site: String) -> Receiver<Page> {
+        let (sender, receiver) = channel::<Page>(self.config.page_channel_buffer);
         let visited_urls = Arc::new(Mutex::new(HashSet::<String>::from([site.clone()])));
-        let connection_permits = Arc::new(Semaphore::new(self.config.concurrent_requests.unwrap_or(1)));
+        let connection_permits = Arc::new(Semaphore::new(self.config.concurrent_requests));
         Self::spawn_crawle(site.clone(), site, sender, visited_urls, connection_permits);
         receiver
     }
