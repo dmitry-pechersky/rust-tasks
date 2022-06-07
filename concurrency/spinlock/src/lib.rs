@@ -36,7 +36,7 @@ impl<T> SpinLock<T> {
     }
 
     fn inner_unlock(&self) {
-        self.atomic.store(true, Ordering::Relaxed);
+        self.atomic.store(true, Ordering::SeqCst);
     }
 }
 
