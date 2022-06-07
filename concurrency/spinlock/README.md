@@ -2,7 +2,5 @@
 
 Spin Lock using atomics and unsafe.
 
-## Interface
-
-- SpinLock SpinLockGuard
+- SpinLock
 - SpinLockGuard implements Deref DerefMut traits
