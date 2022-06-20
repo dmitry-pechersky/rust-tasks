@@ -21,7 +21,7 @@ fn broken_cpu() {
                 }
             }
         );
-        let thread2 = thread::spawn(|| 
+        let thread2  = thread::spawn(|| 
             {
                 unsafe {
                     X2 = 1;

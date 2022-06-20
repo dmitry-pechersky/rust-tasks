@@ -23,20 +23,13 @@ impl<T> SpinLock<T> {
     }
 
     fn inner_lock(&self) {
-        const ITERATIONS_BEFORE_YIELD: usize = 1000;
-        let mut iterations = 0;
-        while ! self.atomic.fetch_and(false, Ordering::SeqCst) {
-            if iterations < ITERATIONS_BEFORE_YIELD {
-                hint::spin_loop();
-            } else {
-                thread::yield_now();
-            }
-            iterations += 1;
+        while self.atomic.fetch_or(true, Ordering::Acquire) {
+            hint::spin_loop();
         }
     }
 
     fn inner_unlock(&self) {
-        self.atomic.store(true, Ordering::SeqCst);
+        self.atomic.store(false, Ordering::Release);
     }
 }
 
