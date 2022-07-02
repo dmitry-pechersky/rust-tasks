@@ -25,12 +25,12 @@ pub struct RelaxedValueBuffer<T> {
 }
 
 
-pub fn channel<T: Copy>() -> (Sender<T>, Receiver<T>) {
+pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
     let buffer = Arc::new(ValueBuffer::new());
     (Sender { buffer: buffer.clone() }, Receiver { buffer: Some(buffer) })
 }
 
-impl<T: Copy> Sender<T> {
+impl<T> Sender<T> {
     pub fn send(self, value: T) -> Result<(), ChannelError> {
         if Arc::strong_count(&self.buffer) > 1 {
             self.buffer.send(value);
@@ -40,7 +40,7 @@ impl<T: Copy> Sender<T> {
     }
 }
 
-impl<T: Copy> Receiver<T> {
+impl<T> Receiver<T> {
     pub fn  try_recv(&self) -> Result<T, ChannelError> {
         if let Some(buffer) = &self.buffer {
             let channel_open = Arc::strong_count(buffer) > 1;     
@@ -55,7 +55,7 @@ impl<T: Copy> Receiver<T> {
     }
 }
 
-impl<T: Copy> ValueBuffer<T> {
+impl<T> ValueBuffer<T> {
     pub fn new() -> Self {
         Self { value: None, status: AtomicBool::new(false) }
     }
@@ -79,7 +79,7 @@ impl<T: Copy> ValueBuffer<T> {
 }
 
 
-impl<T: Copy> RelaxedValueBuffer<T> {
+impl<T> RelaxedValueBuffer<T> {
     pub fn new() -> Self {
         Self { value: None, status: AtomicBool::new(false) }
     }

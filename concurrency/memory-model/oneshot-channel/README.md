@@ -1,4 +1,4 @@
-# One hot channel and value buffer
+# One shot channel and value buffer
 
 ValueBuffer - value buffer with atomics and correct orderings for happens before order
 
