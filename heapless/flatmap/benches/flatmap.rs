@@ -8,7 +8,7 @@ const COUNT: usize = 100000;
 const CAPACITY: usize = 20;
 
 #[bench]
-fn bench_flatmat(bencher: &mut test::Bencher) {
+fn bench_flatmap(bencher: &mut test::Bencher) {
     bencher.iter(
         ||
         {

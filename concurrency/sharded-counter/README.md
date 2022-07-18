@@ -7,7 +7,7 @@ Alignment 64 to solve cache line false sharing
 
 ```
 #[repr(align(64))]
-pub struct CounterShard {
+pub struct Counter {
     cnt: AtomicU64,
 }
 ```
