@@ -15,7 +15,7 @@ impl Counter {
     }
     
     pub fn get(&self) -> u64 {
-        self.cnt.load(Ordering::Relaxed)
+        self.cnt.load(Ordering::SeqCst)
     }
 }
 
