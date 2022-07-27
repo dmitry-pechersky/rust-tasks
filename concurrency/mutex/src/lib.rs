@@ -19,14 +19,18 @@ impl<T> Mutex<T> {
     }
 
     fn inner_lock(&self) {
-        while 1 == self.atomic.swap(1, Ordering::AcqRel) {
-            self.atomic.wait(1);
+        while self.atomic.compare_exchange(0, 1, Ordering::AcqRel, Ordering::Acquire).is_err() {
+            match self.atomic.compare_exchange(1, 2, Ordering::AcqRel, Ordering::Acquire) {
+                Ok(_) | Err(2) => self.atomic.wait(2),
+                _ => (),
+            };
         }
     }
 
     fn inner_unlock(&self) {
-        self.atomic.store(0, Ordering::Release);
-        self.atomic.notify_all();
+        if 2 == self.atomic.swap(0, Ordering::AcqRel) {
+            self.atomic.notify_all();
+        }
     }
 }
 

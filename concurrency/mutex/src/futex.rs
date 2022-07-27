@@ -34,9 +34,10 @@ fn futex_wait(atomic: &AtomicU32, expected_value: u32) -> Result<(), i32> {
         )
     };
     if res == -1 { 
-        Err(
-            unsafe { *libc::__errno_location() }
-        ) 
+        match unsafe { *libc::__errno_location() } {
+            libc::EAGAIN => Ok(()),
+            error => Err(error),
+        }
     }  else { 
         Ok(()) 
     }

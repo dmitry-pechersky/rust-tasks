@@ -45,3 +45,40 @@ fn mutual_exclusion() {
     assert_eq!(*mutex.lock(), 3);
     thread1.join().unwrap();
 }
+
+#[test]
+fn stress_test() {
+    const THREAD_CNT: usize = 10000;
+    const ITERATION_CNT: usize = 1000;
+    let mutex = Arc::new(Mutex::new(0));
+    let threads = (0.. THREAD_CNT).map(|_| {
+        let mutex = mutex.clone();
+        thread::spawn(move || {
+            for _ in 0..ITERATION_CNT {
+                let mut guard = mutex.lock();
+                *guard += 1;
+            }
+        })
+    }).collect::<Vec<_>>();
+    threads.into_iter().for_each(| handle | handle.join().unwrap());
+    assert_eq!(THREAD_CNT * ITERATION_CNT, *mutex.lock());
+}
+
+#[test]
+fn stress_sleep_test() {
+    const THREAD_CNT: usize = 1000;
+    const ITERATION_CNT: usize = 10;
+    let mutex = Arc::new(Mutex::new(0));
+    let threads = (0.. THREAD_CNT).map(|_| {
+        let mutex = mutex.clone();
+        thread::spawn(move || {
+            for _ in 0..ITERATION_CNT {
+                let mut guard = mutex.lock();
+                thread::sleep(Duration::from_millis(1));
+                *guard += 1;
+            }
+        })
+    }).collect::<Vec<_>>();
+    threads.into_iter().for_each(| handle | handle.join().unwrap());
+    assert_eq!(THREAD_CNT * ITERATION_CNT, *mutex.lock());
+}
