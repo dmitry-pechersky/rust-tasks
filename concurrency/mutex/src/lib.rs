@@ -19,17 +19,21 @@ impl<T> Mutex<T> {
     }
 
     fn inner_lock(&self) {
-        while self.atomic.compare_exchange(0, 1, Ordering::AcqRel, Ordering::Acquire).is_err() {
-            match self.atomic.compare_exchange(1, 2, Ordering::AcqRel, Ordering::Acquire) {
-                Ok(_) | Err(2) => self.atomic.wait(2),
-                _ => (),
-            };
+        if let Err(c) = self.atomic.compare_exchange(0, 1, Ordering::SeqCst, Ordering::SeqCst) {
+            loop {
+                if c == 2 || self.atomic.compare_exchange(1, 2, Ordering::SeqCst, Ordering::SeqCst).is_ok() {
+                    self.atomic.wait(2);
+                }
+                if self.atomic.compare_exchange(0, 2, Ordering::SeqCst, Ordering::SeqCst).is_ok() {
+                    break;
+                }
+            }
         }
     }
 
     fn inner_unlock(&self) {
-        if 2 == self.atomic.swap(0, Ordering::AcqRel) {
-            self.atomic.notify_all();
+        if 1 != self.atomic.swap(0, Ordering::SeqCst) {
+            self.atomic.notify_one();
         }
     }
 }

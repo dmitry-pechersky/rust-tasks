@@ -47,6 +47,32 @@ fn mutual_exclusion() {
 }
 
 #[test]
+fn mutual_exclusion_three_threads() {
+    let mutex = Arc::new(Mutex::new(1));
+    let thread1 = {
+        let mutex = mutex.clone();
+        thread::Builder::new().name("thread1".to_string()).spawn(move || {
+            let mut guard = mutex.lock();
+            *guard += 1;
+            thread::sleep(Duration::from_secs(3));
+        }).unwrap() 
+    };
+    let thread2 = {
+        let mutex = mutex.clone();
+        thread::Builder::new().name("thread2".to_string()).spawn(move || {
+            thread::sleep(Duration::from_secs(1));
+            let mut guard = mutex.lock();
+            *guard += 1;
+        }).unwrap()
+    };
+    thread::sleep(Duration::from_secs(2));
+    assert_eq!(3, *mutex.lock());
+    thread1.join().unwrap();
+    thread2.join().unwrap();
+}
+
+
+#[test]
 fn stress_test() {
     const THREAD_CNT: usize = 10000;
     const ITERATION_CNT: usize = 1000;
