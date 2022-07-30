@@ -9,8 +9,7 @@
 
 Using Linux futex for blocking
 
-3 states
-
+3 states:
 - 0 unlocked
 - 1 locked, now waiters
 - 2 locked, one or more waiters
